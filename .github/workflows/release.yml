@@ -1,13 +1,17 @@
+# .github/workflows/release.yml
 name: Build and Release
 
 on:
   push:
     tags:
-      - 'v*'  # Déclenche sur les tags version (ex: v1.0.0)
-  workflow_dispatch:  # Permet de déclencher manuellement
+      - 'v*'
+  workflow_dispatch:
 
 env:
   CARGO_TERM_COLOR: always
+  # Variables personnalisables (optionnelles)
+  RUST_VERSION: ${{ vars.RUST_VERSION || 'stable' }}
+  BUILD_FEATURES: ${{ vars.BUILD_FEATURES || '' }}
 
 jobs:
   build:
@@ -21,7 +25,7 @@ jobs:
             binary_extension: ""
             archive_extension: "tar.gz"
           - os: windows-latest
-            target: x86_64-pc-windows-msvc
+            target: x86_64-pc-windows-gnu
             binary_extension: ".exe"
             archive_extension: "zip"
 
@@ -29,9 +33,16 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
 
+    - name: Install system dependencies (Linux)
+      if: matrix.os == 'ubuntu-latest'
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y libudev-dev pkg-config
+
     - name: Install Rust
       uses: dtolnay/rust-toolchain@stable
       with:
+        toolchain: ${{ env.RUST_VERSION }}
         targets: ${{ matrix.target }}
 
     - name: Cache cargo registry
@@ -136,6 +147,6 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: artifacts/${{ steps.project_name.outputs.name }}-x86_64-pc-windows-msvc/${{ steps.project_name.outputs.name }}-x86_64-pc-windows-msvc.zip
+        asset_path: artifacts/${{ steps.project_name.outputs.name }}-x86_64-pc-windows-gnu/${{ steps.project_name.outputs.name }}-x86_64-pc-windows-gnu.zip
         asset_name: ${{ steps.project_name.outputs.name }}-windows-x86_64.zip
         asset_content_type: application/zip
