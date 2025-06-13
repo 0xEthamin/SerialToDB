@@ -9,7 +9,6 @@ on:
 
 env:
   CARGO_TERM_COLOR: always
-  # Variables personnalisables (optionnelles)
   RUST_VERSION: ${{ vars.RUST_VERSION || 'stable' }}
   BUILD_FEATURES: ${{ vars.BUILD_FEATURES || '' }}
 
@@ -83,19 +82,21 @@ jobs:
       if: matrix.os == 'ubuntu-latest'
       run: |
         cd release
-        tar -czf ../${{ steps.project_name.outputs.name }}-${{ matrix.target }}.${{ matrix.archive_extension }} *
+        tar -czf ../${{ steps.project_name.outputs.name }}-linux-64.tar.gz *
 
     - name: Create archive (Windows)
       if: matrix.os == 'windows-latest'
       run: |
         cd release
-        Compress-Archive -Path * -DestinationPath ../${{ steps.project_name.outputs.name }}-${{ matrix.target }}.${{ matrix.archive_extension }}
+        Compress-Archive -Path * -DestinationPath ../${{ steps.project_name.outputs.name }}-windows-64.zip
 
     - name: Upload artifact
       uses: actions/upload-artifact@v4
       with:
         name: ${{ steps.project_name.outputs.name }}-${{ matrix.target }}
-        path: ${{ steps.project_name.outputs.name }}-${{ matrix.target }}.${{ matrix.archive_extension }}
+        path: |
+          ${{ steps.project_name.outputs.name }}-linux-64.tar.gz
+          ${{ steps.project_name.outputs.name }}-windows-64.zip
 
   release:
     name: Create Release
@@ -125,8 +126,8 @@ jobs:
       if: startsWith(github.ref, 'refs/tags/')
       with:
         files: |
-          artifacts/${{ steps.project_name.outputs.name }}-x86_64-unknown-linux-gnu/${{ steps.project_name.outputs.name }}-x86_64-unknown-linux-gnu.tar.gz
-          artifacts/${{ steps.project_name.outputs.name }}-x86_64-pc-windows-gnu/${{ steps.project_name.outputs.name }}-x86_64-pc-windows-gnu.zip
+          artifacts/${{ steps.project_name.outputs.name }}-x86_64-unknown-linux-gnu/${{ steps.project_name.outputs.name }}-linux-64.tar.gz
+          artifacts/${{ steps.project_name.outputs.name }}-x86_64-pc-windows-gnu/${{ steps.project_name.outputs.name }}-windows-64.zip
         name: Release ${{ github.ref_name }}
         draft: false
         prerelease: false
