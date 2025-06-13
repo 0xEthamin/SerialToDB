@@ -1,0 +1,24 @@
+[serial]
+# Port série par défaut
+# Sur Linux: /dev/ttyACM0 ou /dev/ttyUSB0
+# Sur Windows: COM1, COM2, etc.
+port = "/dev/ttyACM0"
+# Vitesse en bauds
+baud_rate = 9600
+# Timeout en millisecondes
+timeout_ms = 1000
+
+[database]
+# Type de base de données (postgres, mysql, mariadb)
+db_type = "postgres"
+host = "app.garageisep.com"
+port = 5432
+user = "app_user"
+password = ""
+db_name = "app_db"
+# Nom de la table, si elle n'existe pas elle sera auto crée.
+table = "temperature_humidite"
+
+[upload]
+# Fréquence d'upload en secondes. (Pas beaucoup moins, on evite la surcharge svp)
+frequency = 2 
