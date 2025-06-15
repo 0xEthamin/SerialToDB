@@ -1,7 +1,7 @@
 # Serial to Database Bridge
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![Platform](https://img.shields.io/badge/platform-Linux%20%7C%20Windows-blue)]()
+[![Platform](https://img.shields.io/badge/platform-Linux%20%7C%20Windows%20%7C%20macOS-blue)]()
 [![Database](https://img.shields.io/badge/database-PostgreSQL%20%7C%20MySQL%20%7C%20MariaDB-green)]()
 
 A robust Rust application that reads data from serial ports and stores it in databases. Designed for IoT applications, sensor data logging, and embedded system integration.
@@ -29,7 +29,7 @@ This application provides a reliable bridge between serial devices and databases
 ## Hardware Compatibility
 
 - **Serial Devices**: Arduino, ESP32, Raspberry Pi, or any device with UART output
-- **Operating Systems**: Linux, Windows
+- **Operating Systems**: Linux, Windows, macOS
 - **Databases**: PostgreSQL 9.5+, MySQL 5.7+, MariaDB 10.2+
 
 ---
@@ -43,6 +43,7 @@ Create a configuration file at `config/default.toml`:
 # Serial port configuration
 # Linux: /dev/ttyACM0, /dev/ttyUSB0
 # Windows: COM1, COM2, etc.
+# macOS: /dev/tty.usbserial-*, /dev/tty.usbmodem*
 port = "/dev/ttyACM0"
 baud_rate = 9600
 timeout_ms = 1000

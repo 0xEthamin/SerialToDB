@@ -26,6 +26,10 @@ jobs:
             target: x86_64-pc-windows-msvc
             binary_extension: ".exe"
             archive_extension: "zip"
+          - os: macos-latest
+            target: x86_64-apple-darwin
+            binary_extension: ""
+            archive_extension: "tar.gz"
 
     steps:
     - name: Checkout code
@@ -89,6 +93,12 @@ jobs:
         cd release
         Compress-Archive -Path * -DestinationPath ../${{ steps.project_name.outputs.name }}-windows-64.zip
 
+    - name: Create archive (macOS)
+      if: matrix.os == 'macos-latest'
+      run: |
+        cd release
+        tar -czf ../${{ steps.project_name.outputs.name }}-macos-64.tar.gz *
+
     - name: Upload artifact
       uses: actions/upload-artifact@v4
       with:
@@ -96,6 +106,7 @@ jobs:
         path: |
           ${{ steps.project_name.outputs.name }}-linux-64.tar.gz
           ${{ steps.project_name.outputs.name }}-windows-64.zip
+          ${{ steps.project_name.outputs.name }}-macos-64.tar.gz
 
   release:
     name: Create Release
@@ -127,6 +138,7 @@ jobs:
         files: |
           artifacts/${{ steps.project_name.outputs.name }}-x86_64-unknown-linux-gnu/${{ steps.project_name.outputs.name }}-linux-64.tar.gz
           artifacts/${{ steps.project_name.outputs.name }}-x86_64-pc-windows-msvc/${{ steps.project_name.outputs.name }}-windows-64.zip
+          artifacts/${{ steps.project_name.outputs.name }}-x86_64-apple-darwin/${{ steps.project_name.outputs.name }}-macos-64.tar.gz
         name: Release ${{ github.ref_name }}
         draft: false
         prerelease: false
