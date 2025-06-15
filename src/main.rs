@@ -75,7 +75,7 @@ struct Database
 
 impl Database 
 {
-    /// Créer une nouvelle connexion à la base de données
+    /// Create a new database connection
     async fn new(config: &DatabaseConfig) -> Result<Self, Box<dyn std::error::Error>> 
     {
         let inner = match config.db_type 
@@ -94,7 +94,7 @@ impl Database
         Ok(db)
     }
 
-    /// Connexion PostgreSQL
+    /// PostgreSQL connection
     async fn connect_postgres(config: &DatabaseConfig) -> Result<DatabaseInner, Box<dyn std::error::Error>> 
     {
         let connection_string = format!(
@@ -104,19 +104,19 @@ impl Database
 
         let (client, connection) = tokio_postgres::connect(&connection_string, NoTls).await?;
 
-        // Gérer la connexion en arrière-plan
+        // Handle connection in background
         tokio::spawn(async move 
         {
             if let Err(e) = connection.await 
             {
-                eprintln!("Erreur de connexion PostgreSQL: {}", e);
+                eprintln!("PostgreSQL connection error: {}", e);
             }
         });
 
         Ok(DatabaseInner::Postgres(client))
     }
 
-    /// Connexion MySQL/MariaDB
+    /// MySQL/MariaDB connection
     async fn connect_mysql(config: &DatabaseConfig) -> Result<DatabaseInner, Box<dyn std::error::Error>> 
     {
         let url = format!(
@@ -128,7 +128,7 @@ impl Database
         Ok(DatabaseInner::MySQL(pool))
     }
 
-    /// Créer la table si elle n'existe pas
+    /// Create table if it doesn't exist
     async fn create_table_if_not_exists(&self) -> Result<(), Box<dyn std::error::Error>> 
     {
         match &self.inner 
@@ -162,7 +162,7 @@ impl Database
         Ok(())
     }
 
-    /// Insérer une valeur dans la base de données
+    /// Insert a value into the database
     async fn insert_value(&self, value: &str) -> Result<(), Box<dyn std::error::Error>> 
     {
         let now: DateTime<Utc> = Utc::now();
@@ -200,17 +200,17 @@ struct SerialPortManager;
 
 impl SerialPortManager 
 {
-    /// Lister tous les ports série disponibles
+    /// List all available serial ports
     fn list_available_ports() -> Result<Vec<SerialPortInfo>, Box<dyn std::error::Error>> 
     {
         let ports = serialport::available_ports()?;
         Ok(ports)
     }
 
-    /// Afficher les ports série disponibles
+    /// Display available serial ports
     fn display_available_ports() 
     {
-        println!("Ports série disponibles :");
+        println!("Available serial ports:");
         
         match Self::list_available_ports() 
         {
@@ -237,19 +237,19 @@ impl SerialPortManager
                         }
                         SerialPortType::Unknown => 
                         {
-                            println!("  Inconnu - {}", port.port_name);
+                            println!("  Unknown - {}", port.port_name);
                         }
                     }
                 }
             }
             Err(e) => 
             {
-                eprintln!("Erreur lors de la recherche des ports série: {}", e);
+                eprintln!("Error while searching for serial ports: {}", e);
             }
         }
     }
 
-    /// Ouvrir un port série avec la configuration donnée
+    /// Open a serial port with the given configuration
     fn open_port(config: &SerialConfig) -> Result<Box<dyn serialport::SerialPort>, Box<dyn std::error::Error>> 
     {
         let port = serialport::new(&config.port, config.baud_rate)
@@ -268,7 +268,7 @@ struct ConfigManager;
 
 impl ConfigManager 
 {
-    /// Charger la configuration depuis le fichier TOML
+    /// Load configuration from TOML file
     fn load() -> Result<Settings, Box<dyn std::error::Error>> 
     {
         let config_path = Path::new("config/default.toml");
@@ -281,16 +281,16 @@ impl ConfigManager
         Ok(settings)
     }
 
-    /// Afficher la configuration actuelle
+    /// Display current configuration
     fn display(settings: &Settings) 
     {
-        println!("\nConfiguration actuelle :");
-        println!("  Port : {}", settings.serial.port);
-        println!("  Baud rate : {}", settings.serial.baud_rate);
-        println!("  Timeout : {} ms", settings.serial.timeout_ms);
-        println!("  Fréquence d'upload : {} secondes", settings.upload.frequency);
-        println!("  Base de données : {:?}", settings.database.db_type);
-        println!("  Table : {}", settings.database.table);
+        println!("\nCurrent configuration:");
+        println!("  Port: {}", settings.serial.port);
+        println!("  Baud rate: {}", settings.serial.baud_rate);
+        println!("  Timeout: {} ms", settings.serial.timeout_ms);
+        println!("  Upload frequency: {} seconds", settings.upload.frequency);
+        println!("  Database: {:?}", settings.database.db_type);
+        println!("  Table: {}", settings.database.table);
     }
 }
 
@@ -313,16 +313,16 @@ impl DataProcessor
         }
     }
 
-    /// Traiter une nouvelle ligne reçue
+    /// Process a new received line
     fn process_line(&self, line: &str) 
     {
         let trimmed_line = line.trim();
         
         if !trimmed_line.is_empty() 
         {
-            println!("Ligne reçue: {}", trimmed_line);
+            println!("Received line: {}", trimmed_line);
             
-            // Mettre à jour la dernière valeur seulement si elle a changé
+            // Update last value only if it has changed
             let mut last = self.last_value.lock().unwrap();
             if last.as_ref() != Some(&trimmed_line.to_string()) 
             {
@@ -331,7 +331,7 @@ impl DataProcessor
         }
     }
 
-    /// Démarrer la tâche d'upload périodique
+    /// Start periodic upload task
     async fn start_upload_task(&self, database: Database, upload_frequency: u64) 
     {
         let last_value_clone = Arc::clone(&self.last_value);
@@ -355,11 +355,11 @@ impl DataProcessor
                     {
                         Ok(_) => 
                         {
-                            println!("✓ Valeur uploadée avec succès: {}", val);
+                            println!("✓ Value successfully uploaded: {}", val);
                         }
                         Err(e) => 
                         {
-                            eprintln!("✗ Erreur lors de l'upload: {}", e);
+                            eprintln!("✗ Upload error: {}", e);
                         }
                     }
                 }
@@ -376,7 +376,7 @@ struct SerialReader;
 
 impl SerialReader 
 {
-    /// Lire les données du port série de manière continue
+    /// Read data from serial port continuously
     async fn read_continuous(
         port: Box<dyn serialport::SerialPort>, 
         processor: &DataProcessor
@@ -385,7 +385,7 @@ impl SerialReader
         let reader = BufReader::new(port);
         let mut lines = reader.lines();
         
-        println!("\n🔄 Lecture des données du port série...");
+        println!("\n🔄 Reading data from serial port...");
         
         loop 
         {
@@ -399,15 +399,15 @@ impl SerialReader
                 {
                     if e.kind() == std::io::ErrorKind::TimedOut 
                     {
-                        // En cas de timeout, on continue
+                        // In case of timeout, continue
                         continue;
                     }
-                    eprintln!("Erreur lors de la lecture du port série: {}", e);
+                    eprintln!("Error while reading serial port: {}", e);
                     break;
                 }
                 None => 
                 {
-                    // Attendre un peu si aucune ligne n'est disponible
+                    // Wait a bit if no line is available
                     tokio::time::sleep(Duration::from_millis(100)).await;
                     continue;
                 }
@@ -426,34 +426,34 @@ struct Application;
 
 impl Application 
 {
-    /// Point d'entrée principal de l'application
+    /// Main application entry point
     async fn run() -> Result<(), Box<dyn std::error::Error>> 
     {
-        println!("🚀 Démarrage de l'application de lecture série");
+        println!("🚀 Starting serial reading application");
         
-        // Charger la configuration
+        // Load configuration
         let settings = ConfigManager::load()?;
         
-        // Afficher les informations système
+        // Display system information
         SerialPortManager::display_available_ports();
         ConfigManager::display(&settings);
         
-        // Ouvrir le port série
+        // Open serial port
         let port = SerialPortManager::open_port(&settings.serial)?;
-        println!("\n✓ Port série ouvert avec succès");
+        println!("\n✓ Serial port successfully opened");
         
-        // Initialiser la connexion à la base de données
+        // Initialize database connection
         let database = Database::new(&settings.database).await?;
-        println!("✓ Connexion à la base de données établie");
+        println!("✓ Database connection established");
         
-        // Initialiser le processeur de données
+        // Initialize data processor
         let processor = DataProcessor::new();
         
-        // Démarrer la tâche d'upload
+        // Start upload task
         processor.start_upload_task(database, settings.upload.frequency).await;
-        println!("✓ Tâche d'upload démarrée");
+        println!("✓ Upload task started");
         
-        // Commencer la lecture série
+        // Start serial reading
         SerialReader::read_continuous(port, &processor).await?;
         
         Ok(())
@@ -469,9 +469,16 @@ async fn main() -> Result<(), Box<dyn std::error::Error>>
 {
     if let Err(e) = Application::run().await 
     {
-        eprintln!("❌ Erreur fatale: {}", e);
+        eprintln!("❌ Fatal error: {}", e);
+        println!("\nPress Enter to exit...");
+        let mut input = String::new();
+        std::io::stdin().read_line(&mut input)?;
         std::process::exit(1);
     }
+    
+    println!("\nPress Enter to exit...");
+    let mut input = String::new();
+    std::io::stdin().read_line(&mut input)?;
     
     Ok(())
 }
